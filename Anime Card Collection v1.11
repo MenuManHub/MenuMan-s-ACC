@@ -16,6 +16,8 @@ local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 local root = character:WaitForChild("HumanoidRootPart")
 
+local TweenService = game:GetService("TweenService")
+
 --========================================================
 -- Window Setup
 --========================================================
@@ -425,260 +427,319 @@ task.spawn(function()
 	end
 end)
 
-
-
 --========================================================
--- AUTO FARMING & MUTATION FILTERS (FULL INTEGRATION)
+-- AUTO COLLECT PACKS
 --========================================================
+local autoCollectPacks = false
 
--- Create Auto Farming Tab
-local AutoFarmTab = Window:CreateTab("Auto Farming", 4483362458)
-AutoFarmTab:CreateSection("Pack Automation")
-
--- Create Mutation Filters Tab
-local MutationTab = Window:CreateTab("Mutation Filters", 4483362458)
-MutationTab:CreateSection("Allowed Mutations")
-
--- Services
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-local CardRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Card")
-
---========================================================
--- STATE VARIABLES
---========================================================
-local autoFarmPacksEnabled = false
-local selectedPacks = {}
-local mutationFilters = {
-    Gold = false,
-    Emerald = false,
-    Void = false,
-    Diamond = false,
-    Rainbow = false
-}
-
---========================================================
--- MUTATION FILTER TOGGLES
---========================================================
-for mutation, _ in pairs(mutationFilters) do
-    MutationTab:CreateToggle({
-        Name = mutation,
-        CurrentValue = false,
-        Flag = "Mutation_" .. mutation,
-        Callback = function(v)
-            mutationFilters[mutation] = v
-            print("[MutationTab] " .. mutation .. " set to", v)
-        end
-    })
-end
-
--- Restore saved mutation flags
-task.delay(1, function()
-    for mutation, _ in pairs(mutationFilters) do
-        local flag = Rayfield.Flags["Mutation_" .. mutation]
-        if flag and flag.CurrentValue ~= nil then
-            mutationFilters[mutation] = flag.CurrentValue
-            print("[MutationTab] Restored", mutation, flag.CurrentValue)
-        end
-    end
-end)
-
-
---========================================================
--- AUTO FARM TOGGLE
---========================================================
-AutoFarmTab:CreateToggle({
-    Name = "Auto Farm Packs",
-    CurrentValue = false,
-    Flag = "AutoFarmPacks",
-    Callback = function(v)
-        autoFarmPacksEnabled = v
-        print("[AutoFarm] Auto Farm Packs toggled:", v)
-    end
+GameTab:CreateToggle({
+	Name = "Auto Collect Packs",
+	CurrentValue = false,
+	Flag = "AutoCollectPacks",
+	Callback = function(Value)
+		autoCollectPacks = Value
+	end
 })
 
-
 --========================================================
--- PACK FILTER TOGGLES
+-- AUTO COLLECT PACKS (FAST SCANNER)
 --========================================================
-local packsFolder =
-    ReplicatedStorage:FindFirstChild("Assets")
-    and ReplicatedStorage.Assets:FindFirstChild("Packs")
 
-if packsFolder then
-    for _, pack in ipairs(packsFolder:GetChildren()) do
-        if pack:IsA("Model") then
-            selectedPacks[pack.Name] = true
+local COLLECT_DELAY = 0.08
 
-            AutoFarmTab:CreateToggle({
-                Name = pack.Name,
-                CurrentValue = false,
-                Flag = "Pack_" .. pack.Name,
-                Callback = function(v)
-                    selectedPacks[pack.Name] = v
-                    print("[AutoFarm] Pack " .. pack.Name .. " set to", v)
-                end
-            })
-        end
-    end
-end
+task.spawn(function()
 
--- Restore pack toggles
-task.delay(1, function()
-    for packName, _ in pairs(selectedPacks) do
-        local flag = Rayfield.Flags["Pack_" .. packName]
-        if flag and flag.CurrentValue ~= nil then
-            selectedPacks[packName] = flag.CurrentValue
-            print("[AutoFarm] Restored pack:", packName, flag.CurrentValue)
-        end
-    end
+	while true do
+		if not autoCollectPacks then
+			task.wait(0.2)
+			continue
+		end
+
+		local plot = getPlayerPlot()
+		if not plot then
+			task.wait(0.5)
+			continue
+		end
+
+		local packsFolder = plot:FindFirstChild("Packs")
+		if not packsFolder then
+			task.wait(0.2)
+			continue
+		end
+
+		for _, packModel in ipairs(packsFolder:GetChildren()) do
+
+			if not autoCollectPacks then
+				break
+			end
+
+			if not packModel:IsA("Model") then
+				continue
+			end
+
+			local packNameModel = nil
+
+			-- find pack name model (not Top or Bottom)
+			for _, child in ipairs(packModel:GetChildren()) do
+				if child.Name ~= "Top" and child.Name ~= "Bottom" then
+					packNameModel = child
+					break
+				end
+			end
+
+			if not packNameModel then
+				continue
+			end
+
+			local timer =
+				packNameModel:FindFirstChild("PackTimer")
+				and packNameModel.PackTimer:FindFirstChild("Timer")
+
+			if not timer then
+				continue
+			end
+
+			if timer.Text == "Ready!" then
+
+				local prompt = packModel:FindFirstChildWhichIsA("ProximityPrompt", true)
+
+				if prompt then
+					prompt.HoldDuration = 0
+					fireproximityprompt(prompt)
+				end
+
+			end
+
+		end
+
+		task.wait(COLLECT_DELAY)
+
+	end
+
 end)
 
 --========================================================
--- MUTATION CHECK FUNCTION (robust + recursive)
+-- AUTO PLACE PACKS
 --========================================================
-local function mutationPasses(packInstance)
-    -- Check if any mutation filter is ON
-    local anyEnabled = false
-    for _, enabled in pairs(mutationFilters) do
-        if enabled then
-            anyEnabled = true
-            break
-        end
-    end
+local autoPlacePacks = false
 
-    -- No filters ON → allow all packs
-    if not anyEnabled then
-        print("[Mutation] No filters enabled → allow all mutations for pack:", packInstance.Name)
-        return true
-    end
+GameTab:CreateToggle({
+	Name = "Auto Place Packs",
+	CurrentValue = false,
+	Flag = "AutoPlacePacks",
+	Callback = function(Value)
+		autoPlacePacks = Value
+	end
+})
 
-    -- Go through all descendants of the pack
-    for _, descendant in ipairs(packInstance:GetDescendants()) do
-        -- Only consider Instances that are Models or Parts (ignore values, etc.)
-        if descendant:IsA("Model") or descendant:IsA("Folder") or descendant:IsA("Part") then
-            local name = descendant.Name:gsub("%s+", ""):lower() -- trim spaces and lowercase
-            for filterName, enabled in pairs(mutationFilters) do
-                if enabled and name == filterName:lower() then
-                    print("[Mutation] Allowed mutation found:", descendant.Name, "in pack:", packInstance.Name)
-                    return true
-                end
-            end
-        end
-    end
+--========================================================
+-- GET PACK IN HAND
+--========================================================
+local function getPackInHand()
 
-    -- No allowed mutations found
-    print("[Mutation] No allowed mutations in pack:", packInstance.Name)
-    return false
+	local playersFolder = workspace:FindFirstChild("Players")
+	if not playersFolder then
+		return nil
+	end
+
+	local playerModel = playersFolder:FindFirstChild(player.Name)
+	if not playerModel then
+		return nil
+	end
+
+	local hrp = playerModel:FindFirstChild("HumanoidRootPart")
+	if not hrp then
+		return nil
+	end
+
+	for _, child in ipairs(hrp:GetChildren()) do
+		if child:IsA("Model") then
+			return child.Name
+		end
+	end
+
+	return nil
 end
 
-
-
 --========================================================
--- GET LOCAL PLAYER PLOT (DISPLAY NAME BASED - ROBUST)
+-- AUTO PLACE PACK LOOP (FAST)
 --========================================================
-local function getPlayerPlot()
-    local plotsFolder = workspace:FindFirstChild("Plots")
-    if not plotsFolder then
-        warn("[PlotDetect] workspace.Plots not found")
-        return nil
-    end
-
-    local displayName = string.lower(game.Players.LocalPlayer.DisplayName)
-
-    for i = 1, 6 do
-        local plot = plotsFolder:FindFirstChild(tostring(i))
-        if plot then
-            local display =
-                plot:FindFirstChild("Map")
-                and plot.Map:FindFirstChild("Display")
-                and plot.Map.Display:FindFirstChild("Top")
-                and plot.Map.Display.Top:FindFirstChild("Gui")
-                and plot.Map.Display.Top.Gui:FindFirstChild("Display")
-                and plot.Map.Display.Top.Gui.Display:FindFirstChild("Display")
-
-            if display and typeof(display.Text) == "string" then
-                local text = string.lower(display.Text)
-
-                -- Text format: "<DisplayName>'s Collection"
-                if string.find(text, displayName, 1, true) then
-                    print("[PlotDetect] Found player plot:", i, "Text:", display.Text)
-                    return plot, i
-                end
-            end
-        end
-    end
-
-    warn("[PlotDetect] No plot found for player:", game.Players.LocalPlayer.DisplayName)
-    return nil
-end
-
-
-
--- AUTO FARM SECTION
+local PLACE_DELAY = 0.03
 
 task.spawn(function()
-	local cachedPlot = nil
-	local lastPlotCheck = 0
 
-	while task.wait(1) do
-		if not autoFarmPacksEnabled then
-			cachedPlot = nil
-			continue
-		end
+	while true do
+		if autoPlacePacks then
 
-		-- Recheck plot every 2 seconds
-		if not cachedPlot or tick() - lastPlotCheck > 2 then
-			cachedPlot = getPlayerPlot()
-			lastPlotCheck = tick()
-		end
+			local packName = getPackInHand()
 
-		if not cachedPlot then
-			continue
-		end
+			if packName then
 
-		local packsInWorkspace = workspace:FindFirstChild("Client")
-			and workspace.Client:FindFirstChild("Packs")
+				local args = {
+					"Place",
+					packName
+				}
 
-		if not packsInWorkspace then
-			continue
-		end
+				pcall(function()
+					game:GetService("ReplicatedStorage")
+						:WaitForChild("Remotes")
+						:WaitForChild("Card")
+						:FireServer(unpack(args))
+				end)
 
-		local foundOwnedPack = false
-		for _, packModel in ipairs(packsInWorkspace:GetChildren()) do
-			if string.find(packModel.Name, "-" .. tostring(cachedPlot), 1, true) then
-				foundOwnedPack = true
-				break
 			end
+
 		end
 
-		if not foundOwnedPack then
-			continue
-		end
+		task.wait(PLACE_DELAY)
 
-		for packName, isEnabled in pairs(selectedPacks) do
-			if not autoFarmPacksEnabled then break end
-			if not isEnabled then continue end
-
-			for _, packModel in ipairs(packsInWorkspace:GetChildren()) do
-				if string.find(packModel.Name, "-" .. tostring(cachedPlot), 1, true) then
-					local packInstance = packModel:FindFirstChild(packName)
-					
-					if packInstance and mutationPasses(packInstance) then
-    						print("[AutoFarm] Buying pack:", packName, "from", packModel.Name)
-    						CardRemote:FireServer("BuyPack", packModel.Name)
-    						task.wait(0.2)
-					end
-
-				end
-			end
-		end
 	end
 end)
 
 
+--========================================================
+-- AUTO PATH
+--========================================================
+local autoPathEnabled = false
 
+GameTab:CreateToggle({
+	Name = "AutoFarm Moving",
+	CurrentValue = false,
+	Flag = "AutoPath",
+	Callback = function(Value)
+		autoPathEnabled = Value
+	end
+})
+
+--========================================================
+-- TWEEN PLAYER MOVEMENT
+--========================================================
+local function tweenToPosition(position)
+	if not root then return end
+
+	local distance = (root.Position - position).Magnitude
+	local speed = 128
+	local time = distance / speed
+
+	local tween = TweenService:Create(
+		root,
+		TweenInfo.new(time, Enum.EasingStyle.Linear),
+		{CFrame = CFrame.new(position)}
+	)
+
+	tween:Play()
+	tween.Completed:Wait()
+end
+
+--========================================================
+-- FIND READY PACK
+--========================================================
+local function getReadyPack(packsFolder)
+	for _, packModel in ipairs(packsFolder:GetChildren()) do
+		if packModel:IsA("Model") then
+			local packNameModel
+			for _, child in ipairs(packModel:GetChildren()) do
+				if child.Name ~= "Top" and child.Name ~= "Bottom" then
+					packNameModel = child
+					break
+				end
+			end
+
+			if packNameModel then
+				local timer =
+					packNameModel:FindFirstChild("PackTimer")
+					and packNameModel.PackTimer:FindFirstChild("Timer")
+
+				if timer and timer.Text == "Ready!" then
+					return packModel
+				end
+			end
+		end
+	end
+
+	return nil
+end
+
+--========================================================
+-- NEW: GENERATE RANDOM POSITION AROUND PART (FOR ROAMING)
+--========================================================
+local function getRandomPositionAroundPart(part, minDist, maxDist)
+	if not part then return nil end
+
+	local angle = math.random() * math.pi * 2 -- random angle
+	local distance = math.random() * (maxDist - minDist) + minDist
+	local offset = Vector3.new(math.cos(angle) * distance, 0, math.sin(angle) * distance)
+	return part.Position + offset + Vector3.new(0,3,0) -- 3 studs above ground
+end
+
+--========================================================
+-- AUTO PATH LOOP
+--========================================================
+task.spawn(function()
+	local teleportedToSpawn = false
+
+	while task.wait(0.2) do
+		if not autoPathEnabled then
+			teleportedToSpawn = false
+			continue
+		end
+
+		local plot = getPlayerPlot()
+		if not plot then continue end
+
+		local spawnPart =
+			plot:FindFirstChild("Misc")
+			and plot.Misc:FindFirstChild("Spawn")
+
+		local packsFolder = plot:FindFirstChild("Packs")
+
+		if not spawnPart or not packsFolder then
+			continue
+		end
+
+		-- TELEPORT TO SPAWN ONCE
+		if not teleportedToSpawn then
+			root.CFrame = spawnPart.CFrame + Vector3.new(0,3,0)
+			teleportedToSpawn = true
+			task.wait(1)
+		end
+
+		-- FIND READY PACK
+		local readyPack = getReadyPack(packsFolder)
+
+		if readyPack then
+			local part = readyPack:FindFirstChild("Top", true) or readyPack:FindFirstChildWhichIsA("BasePart", true)
+			if part then
+				tweenToPosition(part.Position + Vector3.new(0,3,0))
+				-- WAIT UNTIL PACK DISAPPEARS
+				repeat
+					task.wait(0.2)
+				until not readyPack.Parent
+			end
+
+		-- NEW: ROAM AROUND PLACED PACKS WHEN NO READY PACKS
+		else
+			local allPackParts = {}
+			for _, packModel in ipairs(packsFolder:GetChildren()) do
+				if packModel:IsA("Model") then
+					local part = packModel:FindFirstChild("Top", true) or packModel:FindFirstChildWhichIsA("BasePart", true)
+					if part then
+						table.insert(allPackParts, part)
+					end
+				end
+			end
+
+			if #allPackParts > 0 then
+				local randomPackPart = allPackParts[math.random(#allPackParts)]
+				local roamPos = getRandomPositionAroundPart(randomPackPart, 2.5, 12.5)
+				tweenToPosition(roamPos)
+				task.wait(0.5)
+			end
+			-- if no packs exist, player just waits
+		end
+
+	end
+end)
 
 --========================================================
 -- AUTO GRADING TAB (FIXED DROPDOWN CALLBACK)
