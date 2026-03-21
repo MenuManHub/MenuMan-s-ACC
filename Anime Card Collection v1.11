@@ -1039,6 +1039,10 @@ local CharacterCategories = {
 	["Rebellion"] = {"Tatsumi", "Bulat", "Leone", "Lubbock", "Sheele", "Mine", "Nanjeda", "Akame", "Esdeath"},
 	["Viking"] = {"Thorfinn", "Askeladd", "Thors", "Canute", "Leif", "Thorkell", "Bjorn", "Floki", "Ylva"},
 	["Mercenary"] = {"Guts", "Griffith", "Casca", "Judeau", "Pippin", "Corkus", "Rickert", "Zodd", "Skull Knight"},
+    ["Online"] = {"Kirito", "Klien", "Asuna", "Leefa", "Yuuki", "Sinon", "Eugeo", "Alice", "Heathcliff"},
+    ["Fate"] = {"Shirou", "Rin Tohsaka", "Rider", "Caster", "Lancer", "Archer", "Saber", "Berserker", "Gilgamesh"},
+
+
 
 }
 
@@ -1048,7 +1052,10 @@ local CategoryOrder = {
 	"One Piece","Naruto","Bleach","Demon Slayer","Jujutsu Kaisen",
 	"Dragon Ball","Fire Force","One Punch Man","Hunter x Hunter",
 	"Solo Leveling","Attack on Titan","Chainsaw Man","Haikyuu",
-	"Blue Lock","Black Clover","Tokyo Ghoul", "Geass", "Bizarre", "Fairy", "Sins", "Note", "Slime", "Mage", "Zero", "Vagrant", "Rebellion", "Viking", "Mercenary"
+	"Blue Lock","Black Clover","Tokyo Ghoul", "Geass", "Bizarre",
+    "Fairy", "Sins", "Note", "Slime", "Mage", "Zero", "Vagrant",
+    "Rebellion", "Viking", "Mercenary", "Online", "Fate",
+
 }
 
 -- Auto Grade toggle
@@ -1166,6 +1173,10 @@ local TraitCategories = {
 	["Rebellion"] = {"Tatsumi", "Bulat", "Leone", "Lubbock", "Sheele", "Mine", "Nanjeda", "Akame", "Esdeath"},
 	["Viking"] = {"Thorfinn", "Askeladd", "Thors", "Canute", "Leif", "Thorkell", "Bjorn", "Floki", "Ylva"},
 	["Mercenary"] = {"Guts", "Griffith", "Casca", "Judeau", "Pippin", "Corkus", "Rickert", "Zodd", "Skull Knight"},
+    ["Online"] = {"Kirito", "Klien", "Asuna", "Leefa", "Yuuki", "Sinon", "Eugeo", "Alice", "Heathcliff"},
+    ["Fate"] = {"Shirou", "Rin Tohsaka", "Rider", "Caster", "Lancer", "Archer", "Saber", "Berserker", "Gilgamesh"},
+    
+
 
 }
 
@@ -1174,7 +1185,9 @@ local TraitCategoryOrder = {
 	"One Piece","Naruto","Bleach","Demon Slayer","Jujutsu Kaisen",
 	"Dragon Ball","Fire Force","One Punch Man","Hunter x Hunter",
 	"Solo Leveling","Attack on Titan","Chainsaw Man","Haikyuu",
-	"Blue Lock","Black Clover","Tokyo Ghoul", "Geass", "Bizarre", "Fairy", "Sins", "Note", "Slime", "Mage", "Zero", "Vagrant", "Rebellion", "Viking", "Mercenary"
+	"Blue Lock","Black Clover","Tokyo Ghoul", "Geass", "Bizarre",
+    "Fairy", "Sins", "Note", "Slime", "Mage", "Zero", "Vagrant",
+    "Rebellion", "Viking", "Mercenary", "Online", "Fate",
 }
 
 --========================================================
