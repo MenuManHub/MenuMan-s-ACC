@@ -1125,7 +1125,7 @@ local selectedTraitCharacter = nil
 local lastTraitSelection = nil
 
 -- Roll speed (~13 rolls/sec)
-local TRAIT_ROLL_DELAY = 0.075
+local TRAIT_ROLL_DELAY = 0.175
 
 --========================================================
 -- AUTO FARM TRAITS TOGGLE
