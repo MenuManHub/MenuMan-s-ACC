@@ -1041,6 +1041,8 @@ local CharacterCategories = {
 	["Mercenary"] = {"Guts", "Griffith", "Casca", "Judeau", "Pippin", "Corkus", "Rickert", "Zodd", "Skull Knight"},
     ["Online"] = {"Kirito", "Klien", "Asuna", "Leefa", "Yuuki", "Sinon", "Eugeo", "Alice", "Heathcliff"},
     ["Fate"] = {"Shirou", "Rin Tohsaka", "Rider", "Caster", "Lancer", "Archer", "Saber", "Berserker", "Gilgamesh"},
+    ["Shadow"] = {"Shadow", "Eta", "Beta", "Zeta", "Beatrix", "Delta", "Alpha", "Elisabeth", "Aurora"},
+    ["Lord"] = {"Ainz", "Elf Twin", "Demiurge", "Cocytus", "Sebas", "Pandora", "Platinum", "Shalltear", "Albedo"},
 
 
 
@@ -1054,7 +1056,7 @@ local CategoryOrder = {
 	"Solo Leveling","Attack on Titan","Chainsaw Man","Haikyuu",
 	"Blue Lock","Black Clover","Tokyo Ghoul", "Geass", "Bizarre",
     "Fairy", "Sins", "Note", "Slime", "Mage", "Zero", "Vagrant",
-    "Rebellion", "Viking", "Mercenary", "Online", "Fate",
+    "Rebellion", "Viking", "Mercenary", "Online", "Fate", "Shadow", "Lord",
 
 }
 
@@ -1175,7 +1177,8 @@ local TraitCategories = {
 	["Mercenary"] = {"Guts", "Griffith", "Casca", "Judeau", "Pippin", "Corkus", "Rickert", "Zodd", "Skull Knight"},
     ["Online"] = {"Kirito", "Klien", "Asuna", "Leefa", "Yuuki", "Sinon", "Eugeo", "Alice", "Heathcliff"},
     ["Fate"] = {"Shirou", "Rin Tohsaka", "Rider", "Caster", "Lancer", "Archer", "Saber", "Berserker", "Gilgamesh"},
-    
+    ["Shadow"] = {"Shadow", "Eta", "Beta", "Zeta", "Beatrix", "Delta", "Alpha", "Elisabeth", "Aurora"},
+    ["Lord"] = {"Ainz", "Elf Twin", "Demiurge", "Cocytus", "Sebas", "Pandora", "Platinum", "Shalltear", "Albedo"},
 
 
 }
@@ -1187,7 +1190,7 @@ local TraitCategoryOrder = {
 	"Solo Leveling","Attack on Titan","Chainsaw Man","Haikyuu",
 	"Blue Lock","Black Clover","Tokyo Ghoul", "Geass", "Bizarre",
     "Fairy", "Sins", "Note", "Slime", "Mage", "Zero", "Vagrant",
-    "Rebellion", "Viking", "Mercenary", "Online", "Fate",
+    "Rebellion", "Viking", "Mercenary", "Online", "Fate", "Shadow", "Lord",
 }
 
 --========================================================
