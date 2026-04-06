@@ -168,6 +168,7 @@ end
 local GameTab = Window:CreateTab("Game", 4483362458)
 GameTab:CreateSection("Auto Farms")
 
+--[[
 --========================================================
 -- GOLD TOKEN FARM
 --========================================================
@@ -199,6 +200,74 @@ task.spawn(function()
 					task.wait(0.15)
 				end
 			end
+		end
+	end
+end)
+]]
+
+
+--========================================================
+-- GOLD TOKEN FARM (STRICT REMOTE CONTROL)
+--========================================================
+
+local goldFarmEnabled = false
+
+GameTab:CreateToggle({
+	Name = "Gold Token Farm (Remote)",
+	CurrentValue = false,
+	Flag = "GoldTokenFarmRemote",
+	Callback = function(Value)
+		goldFarmEnabled = Value
+	end
+})
+
+--========================================================
+-- REFERENCES
+--========================================================
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local CardRemote = ReplicatedStorage
+	:WaitForChild("Remotes")
+	:WaitForChild("Card")
+
+local TOKEN_DELAY = 0.11
+
+--========================================================
+-- TOKEN COLLECT LOOP (STRICT CONDITIONS)
+--========================================================
+
+task.spawn(function()
+	while true do
+		-- Only run when enabled
+		if not goldFarmEnabled then
+			task.wait(0.2)
+			continue
+		end
+
+		local tokenFolder =
+			workspace:FindFirstChild("Items")
+			and workspace.Items:FindFirstChild("Tokens")
+			and workspace.Items.Tokens:FindFirstChild("Client")
+
+		-- Only run if folder exists AND has children
+		if not tokenFolder or #tokenFolder:GetChildren() == 0 then
+			task.wait(0.2)
+			continue
+		end
+
+		-- Process ONE token at a time
+		local token = tokenFolder:GetChildren()[1]
+
+		if token then
+			local tokenId = token.Name
+
+			pcall(function()
+				CardRemote:FireServer("CollectToken", tokenId)
+			end)
+
+			-- STRICT delay between each fire
+			task.wait(TOKEN_DELAY)
 		end
 	end
 end)
@@ -411,6 +480,7 @@ alertSound:GetPropertyChangedSignal("Playing"):Connect(function()
 		teleportAllDragonBalls()
 	end
 end)
+GameTab:CreateSection("Collect Cash")
 
 --========================================================
 -- AUTO COLLECT CASH (PLOT PAGE CYCLER)
@@ -593,6 +663,7 @@ task.spawn(function()
 	end
 end)
 
+GameTab:CreateSection("AutoFarm Cards")
 --========================================================
 -- AUTO COLLECT PACKS
 --========================================================
