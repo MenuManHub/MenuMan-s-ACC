@@ -247,6 +247,172 @@ task.spawn(function()
 end)
 
 --========================================================
+-- AUTO COLLECT EGGS
+--========================================================
+
+local autoCollectEggs = false
+
+GameTab:CreateToggle({
+	Name = "Auto Collect Eggs",
+	CurrentValue = false,
+	Flag = "AutoCollectEggs",
+	Callback = function(Value)
+		autoCollectEggs = Value
+	end
+})
+
+--========================================================
+-- AUTO COLLECT EGGS LOOP
+--========================================================
+
+local EasterRemote = game:GetService("ReplicatedStorage")
+	:WaitForChild("Remotes")
+	:WaitForChild("Easter")
+
+local EGG_DELAY = 0.1
+local MAX_EGGS = 70
+
+task.spawn(function()
+	while true do
+		if not autoCollectEggs then
+			task.wait(0.2)
+			continue
+		end
+
+		local eggFolder =
+			workspace:FindFirstChild("Items")
+			and workspace.Items:FindFirstChild("EasterEggSpawns")
+
+		if not eggFolder then
+			task.wait(0.5)
+			continue
+		end
+
+		for i = 1, MAX_EGGS do
+			if not autoCollectEggs then break end
+
+			local eggName = tostring(i)
+			local eggPart = eggFolder:FindFirstChild(eggName)
+
+			-- Only fire if the egg exists
+			if eggPart then
+				pcall(function()
+					EasterRemote:FireServer("Collect", eggName)
+				end)
+				task.wait(EGG_DELAY)
+			end
+		end
+	end
+end)
+
+--========================================================
+-- AUTO DRAGON BALL TELEPORT (SOUND TRIGGERED)
+--========================================================
+
+local dragonBallAutoTP = false
+local isTeleporting = false
+
+GameTab:CreateToggle({
+	Name = "Auto Dragon Ball Collect",
+	CurrentValue = false,
+	Flag = "DragonBallAutoTP",
+	Callback = function(Value)
+		dragonBallAutoTP = Value
+	end
+})
+
+--========================================================
+-- REFERENCES
+--========================================================
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local alertSound =
+	ReplicatedStorage:WaitForChild("Assets")
+	:WaitForChild("Sounds")
+	:WaitForChild("Notifications")
+	:WaitForChild("DragonBallAlert")
+
+local TELEPORT_DELAY = 0.9
+
+--========================================================
+-- SAFE TELEPORT FUNCTION
+--========================================================
+
+local function teleportToPart(part)
+	if not part or not root then return end
+	root.CFrame = part.CFrame + Vector3.new(0, 3, 0)
+end
+
+--========================================================
+-- MAIN TELEPORT SEQUENCE
+--========================================================
+
+local function teleportAllDragonBalls()
+
+	-- Prevent overlapping runs
+	if isTeleporting then return end
+	isTeleporting = true
+
+	local folder =
+		workspace:FindFirstChild("Items")
+		and workspace.Items:FindFirstChild("DragonBallSpawns")
+
+	if not folder then
+		isTeleporting = false
+		return
+	end
+
+	-- Collect all valid parts
+	local parts = {}
+
+	for _, obj in ipairs(folder:GetChildren()) do
+		if obj:IsA("BasePart") then
+			table.insert(parts, obj)
+		end
+	end
+
+	-- Sort by name (1 → 2 → 3 ...)
+	table.sort(parts, function(a, b)
+		return tonumber(a.Name) < tonumber(b.Name)
+	end)
+
+	-- Teleport through each
+	for _, part in ipairs(parts) do
+		if not dragonBallAutoTP then break end
+
+		teleportToPart(part)
+		task.wait(TELEPORT_DELAY)
+	end
+
+	isTeleporting = false
+end
+
+--========================================================
+-- SOUND LISTENER
+--========================================================
+
+alertSound.Played:Connect(function()
+	if not dragonBallAutoTP then return end
+
+	-- Small delay ensures spawns exist
+	task.wait(0.1)
+
+	teleportAllDragonBalls()
+end)
+
+--========================================================
+-- FALLBACK (IF .Played DOESN'T FIRE)
+--========================================================
+
+alertSound:GetPropertyChangedSignal("Playing"):Connect(function()
+	if alertSound.Playing and dragonBallAutoTP then
+		task.wait(0.1)
+		teleportAllDragonBalls()
+	end
+end)
+
+--========================================================
 -- AUTO COLLECT CASH (PLOT PAGE CYCLER)
 --========================================================
 
@@ -1043,7 +1209,8 @@ local CharacterCategories = {
     ["Fate"] = {"Shirou", "Rin Tohsaka", "Rider", "Caster", "Lancer", "Archer", "Saber", "Berserker", "Gilgamesh"},
     ["Shadow"] = {"Shadow", "Eta", "Beta", "Zeta", "Beatrix", "Delta", "Alpha", "Elisabeth", "Aurora"},
     ["Lord"] = {"Ainz", "Elf Twin", "Demiurge", "Cocytus", "Sebas", "Pandora", "Platinum", "Shalltear", "Albedo"},
-
+    ["Spy"] = {"Anya","Daiman","Henry Henderson","Franky Spy","Sylvia","Yuri Briar","Fiona","Loid","Yor"},
+    ["Assassin"] = {"Taro Sakamoto","Lu Saotang","Shin Asakura","Heisuke","Osaragi","Shishiba","Yoichi","Kei","Takamura"},
 
 
 }
@@ -1057,6 +1224,7 @@ local CategoryOrder = {
 	"Blue Lock","Black Clover","Tokyo Ghoul", "Geass", "Bizarre",
     "Fairy", "Sins", "Note", "Slime", "Mage", "Zero", "Vagrant",
     "Rebellion", "Viking", "Mercenary", "Online", "Fate", "Shadow", "Lord",
+    "Spy", "Assassin",
 
 }
 
@@ -1179,7 +1347,8 @@ local TraitCategories = {
     ["Fate"] = {"Shirou", "Rin Tohsaka", "Rider", "Caster", "Lancer", "Archer", "Saber", "Berserker", "Gilgamesh"},
     ["Shadow"] = {"Shadow", "Eta", "Beta", "Zeta", "Beatrix", "Delta", "Alpha", "Elisabeth", "Aurora"},
     ["Lord"] = {"Ainz", "Elf Twin", "Demiurge", "Cocytus", "Sebas", "Pandora", "Platinum", "Shalltear", "Albedo"},
-
+    ["Spy"] = {"Anya","Daiman","Henry Henderson","Franky Spy","Sylvia","Yuri Briar","Fiona","Loid","Yor"},
+    ["Assassin"] = {"Taro Sakamoto","Lu Saotang","Shin Asakura","Heisuke","Osaragi","Shishiba","Yoichi","Kei","Takamura"},
 
 }
 
@@ -1191,6 +1360,7 @@ local TraitCategoryOrder = {
 	"Blue Lock","Black Clover","Tokyo Ghoul", "Geass", "Bizarre",
     "Fairy", "Sins", "Note", "Slime", "Mage", "Zero", "Vagrant",
     "Rebellion", "Viking", "Mercenary", "Online", "Fate", "Shadow", "Lord",
+    "Spy", "Assassin",
 }
 
 --========================================================
