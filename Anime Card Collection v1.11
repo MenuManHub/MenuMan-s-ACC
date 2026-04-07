@@ -166,7 +166,7 @@ end
 -- GAME TAB
 --========================================================
 local GameTab = Window:CreateTab("Game", 4483362458)
-GameTab:CreateSection("Auto Farms")
+GameTab:CreateSection("Auto Collection")
 
 --[[
 --========================================================
@@ -213,7 +213,7 @@ end)
 local goldFarmEnabled = false
 
 GameTab:CreateToggle({
-	Name = "Gold Token Farm (Remote)",
+	Name = "Gold Token Farm",
 	CurrentValue = false,
 	Flag = "GoldTokenFarmRemote",
 	Callback = function(Value)
@@ -273,6 +273,93 @@ task.spawn(function()
 end)
 
 --========================================================
+-- AUTO COLLECT BOOSTS (TIMED REMOTES)
+--========================================================
+
+local autoBoostsEnabled = false
+
+GameTab:CreateToggle({
+	Name = "Auto Collect Boosts",
+	CurrentValue = false,
+	Flag = "AutoCollectBoosts",
+	Callback = function(Value)
+		autoBoostsEnabled = Value
+	end
+})
+
+--========================================================
+-- REFERENCES
+--========================================================
+local PotionRemote = game:GetService("ReplicatedStorage")
+	:WaitForChild("Remotes")
+	:WaitForChild("Potion")
+
+-- Timings
+local HATCH_LUCK_INTERVAL = (10 * 60) + 2   -- 10 minutes 2 seconds
+local TRAVEL_INTERVAL     = (15 * 60) + 2   -- 15 minutes 2 seconds
+
+--========================================================
+-- FIRE FUNCTIONS
+--========================================================
+local function collectTravelTokens()
+	pcall(function()
+		PotionRemote:FireServer("Collect", "TravelToken1")
+		PotionRemote:FireServer("Collect", "TravelToken2")
+	end)
+end
+
+local function collectHatchAndLuck()
+	pcall(function()
+		PotionRemote:FireServer("Collect", "HatchTime")
+		PotionRemote:FireServer("Collect", "Luck")
+	end)
+end
+
+--========================================================
+-- MAIN LOOP
+--========================================================
+task.spawn(function()
+
+	local lastHatchLuck = 0
+	local lastTravel = 0
+	local initialized = false
+
+	while task.wait(1) do
+		if not autoBoostsEnabled then
+			initialized = false
+			continue
+		end
+
+		-- FIRST RUN: fire everything instantly
+		if not initialized then
+			collectTravelTokens()
+			collectHatchAndLuck()
+
+			lastHatchLuck = tick()
+			lastTravel = tick()
+			initialized = true
+			continue
+		end
+
+		local now = tick()
+
+		-- Hatch + Luck every 10m 2s
+		if now - lastHatchLuck >= HATCH_LUCK_INTERVAL then
+			collectHatchAndLuck()
+			lastHatchLuck = now
+		end
+
+		-- Travel tokens every 15m 2s
+		if now - lastTravel >= TRAVEL_INTERVAL then
+			collectTravelTokens()
+			lastTravel = now
+		end
+	end
+
+end)
+
+--[[
+--========================================================
 -- BOOST FARM
 --========================================================
 local boostFarmEnabled = false
@@ -314,7 +401,7 @@ task.spawn(function()
 		end
 	end
 end)
-
+]]
 --========================================================
 -- AUTO COLLECT EGGS
 --========================================================
@@ -373,6 +460,21 @@ task.spawn(function()
 		end
 	end
 end)
+
+--========================================================
+-- CONVEYOR DRAGON BALL (SPECIAL AUTO BUY)
+--========================================================
+
+local conveyorDragonBallEnabled = false
+
+GameTab:CreateToggle({
+	Name = "Conveyor Dragon Ball",
+	CurrentValue = false,
+	Flag = "ConveyorDragonBall",
+	Callback = function(v)
+		conveyorDragonBallEnabled = v
+	end
+})
 
 --========================================================
 -- AUTO DRAGON BALL TELEPORT (SOUND TRIGGERED)
@@ -1228,7 +1330,52 @@ task.spawn(function()
 	end
 end)
 
+--========================================================
+-- DRAGON BALL CONVEYOR SCANNER
+--========================================================
 
+task.spawn(function()
+
+	while task.wait(0.5) do
+		if not conveyorDragonBallEnabled then
+			continue
+		end
+
+		local plot = getPlayerPlot()
+		if not plot then
+			continue
+		end
+
+		local packsInWorkspace = workspace:FindFirstChild("Client")
+			and workspace.Client:FindFirstChild("Packs")
+
+		if not packsInWorkspace then
+			continue
+		end
+
+		for _, packModel in ipairs(packsInWorkspace:GetChildren()) do
+
+			-- Ensure it's YOUR conveyor
+			if not string.find(packModel.Name, "-" .. tostring(plot), 1, true) then
+				continue
+			end
+
+			-- Look for Dragon Ball V inside the model
+			local dragonBallPack = packModel:FindFirstChild("Dragon Ball V")
+
+			if dragonBallPack then
+				print("[DragonBall] Found Dragon Ball V → Buying")
+
+				pcall(function()
+					CardRemote:FireServer("BuyPack", packModel.Name)
+				end)
+
+				task.wait(0.2)
+			end
+		end
+	end
+
+end)
 
 --========================================================
 -- AUTO GRADING TAB (FIXED DROPDOWN CALLBACK)
