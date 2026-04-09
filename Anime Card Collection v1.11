@@ -271,7 +271,7 @@ task.spawn(function()
 		end
 	end
 end)
-
+--[[
 --========================================================
 -- AUTO COLLECT BOOSTS (TIMED REMOTES)
 --========================================================
@@ -358,7 +358,7 @@ task.spawn(function()
 
 end)
 
---[[
+
 --========================================================
 -- BOOST FARM
 --========================================================
@@ -402,6 +402,95 @@ task.spawn(function()
 	end
 end)
 ]]
+
+--========================================================
+-- AUTO COLLECT BOOSTS (PRESENCE-BASED REMOTE)
+--========================================================
+
+local autoBoostsEnabled = false
+
+GameTab:CreateToggle({
+	Name = "Auto Collect Boosts",
+	CurrentValue = false,
+	Flag = "AutoCollectBoostsRemote",
+	Callback = function(Value)
+		autoBoostsEnabled = Value
+	end
+})
+
+--========================================================
+-- REFERENCES
+--========================================================
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local PotionRemote = ReplicatedStorage
+	:WaitForChild("Remotes")
+	:WaitForChild("Potion")
+
+local BOOST_DELAY = 0.11
+
+--========================================================
+-- BOOST PATHS + REMOTE NAMES
+--========================================================
+
+local boostData = {
+	{Path = {"Items","Misc","Collectables","TravelToken1"}, Remote = "TravelToken1"},
+	{Path = {"Items","Misc","Collectables","TravelToken2"}, Remote = "TravelToken2"},
+	{Path = {"Items","Misc","Collectables","HatchTime","Part"}, Remote = "HatchTime"},
+	{Path = {"Items","Misc","Collectables","Luck","Part"}, Remote = "Luck"}
+}
+
+--========================================================
+-- FIND OBJECT FROM PATH
+--========================================================
+
+local function getObjectFromPath(path)
+	local obj = workspace
+
+	for _, name in ipairs(path) do
+		obj = obj:FindFirstChild(name)
+		if not obj then
+			return nil
+		end
+	end
+
+	return obj
+end
+
+--========================================================
+-- MAIN LOOP
+--========================================================
+
+task.spawn(function()
+	while true do
+		if not autoBoostsEnabled then
+			task.wait(0.2)
+			continue
+		end
+
+		for _, data in ipairs(boostData) do
+			if not autoBoostsEnabled then break end
+
+			local obj = getObjectFromPath(data.Path)
+
+			-- Only fire if boost exists and is visible
+			if obj and obj:IsA("BasePart") and obj.Transparency < 1 then
+
+				pcall(function()
+					PotionRemote:FireServer("Collect", data.Remote)
+				end)
+
+				-- Strict delay (same logic as tokens)
+				task.wait(BOOST_DELAY)
+			end
+		end
+
+		task.wait(0.2)
+	end
+end)
+
+
 --========================================================
 -- AUTO COLLECT EGGS
 --========================================================
