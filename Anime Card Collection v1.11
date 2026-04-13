@@ -1518,7 +1518,8 @@ local CharacterCategories = {
     ["Lord"] = {"Ainz", "Elf Twin", "Demiurge", "Cocytus", "Sebas", "Pandora", "Platinum", "Shalltear", "Albedo"},
     ["Spy"] = {"Anya","Daiman","Henry Henderson","Franky Spy","Sylvia","Yuri Briar","Fiona","Loid","Yor"},
     ["Assassin"] = {"Taro Sakamoto","Lu Saotang","Shin Asakura","Heisuke","Osaragi","Shishiba","Yoichi","Kei","Takamura"},
-
+    ["Alchemist"] = {"Alphonse","Winry","Ling","Riza","Alex","Greed","Edward","Scar","Roy"},
+    ["Reincarnation"] = {"Rudeus","Zanoba","Sylphiette","Eris","Roxy","Ghislaine","Rujierd","Kishirika","Orsted"},
 
 }
 
@@ -1531,7 +1532,7 @@ local CategoryOrder = {
 	"Blue Lock","Black Clover","Tokyo Ghoul", "Geass", "Bizarre",
     "Fairy", "Sins", "Note", "Slime", "Mage", "Zero", "Vagrant",
     "Rebellion", "Viking", "Mercenary", "Online", "Fate", "Shadow", "Lord",
-    "Spy", "Assassin",
+    "Spy", "Assassin", "Alchemist", "Reincarnation",
 
 }
 
@@ -1656,6 +1657,8 @@ local TraitCategories = {
     ["Lord"] = {"Ainz", "Elf Twin", "Demiurge", "Cocytus", "Sebas", "Pandora", "Platinum", "Shalltear", "Albedo"},
     ["Spy"] = {"Anya","Daiman","Henry Henderson","Franky Spy","Sylvia","Yuri Briar","Fiona","Loid","Yor"},
     ["Assassin"] = {"Taro Sakamoto","Lu Saotang","Shin Asakura","Heisuke","Osaragi","Shishiba","Yoichi","Kei","Takamura"},
+    ["Alchemist"] = {"Alphonse","Winry","Ling","Riza","Alex","Greed","Edward","Scar","Roy"},
+    ["Reincarnation"] = {"Rudeus","Zanoba","Sylphiette","Eris","Roxy","Ghislaine","Rujierd","Kishirika","Orsted"},
 
 }
 
@@ -1667,7 +1670,7 @@ local TraitCategoryOrder = {
 	"Blue Lock","Black Clover","Tokyo Ghoul", "Geass", "Bizarre",
     "Fairy", "Sins", "Note", "Slime", "Mage", "Zero", "Vagrant",
     "Rebellion", "Viking", "Mercenary", "Online", "Fate", "Shadow", "Lord",
-    "Spy", "Assassin",
+    "Spy", "Assassin", "Alchemist", "Reincarnation",
 }
 
 --========================================================
