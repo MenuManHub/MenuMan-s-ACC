@@ -1520,7 +1520,7 @@ local CharacterCategories = {
     ["Assassin"] = {"Taro Sakamoto","Lu Saotang","Shin Asakura","Heisuke","Osaragi","Shishiba","Yoichi","Kei","Takamura"},
     ["Alchemist"] = {"Alphonse","Winry","Ling","Riza","Alex","Greed","Edward","Scar","Roy"},
     ["Reincarnation"] = {"Rudeus","Zanoba","Sylphiette","Eris","Roxy","Ghislaine","Rujierd","Kishirika","Orsted"},
-
+    ["Elite"] = {"Kuroko", "Aida", "Momoi", "Murasakibara", "Midorima", "Kise", "Kagami", "Aomine", "Akashi"},
 }
 
 
@@ -1532,7 +1532,7 @@ local CategoryOrder = {
 	"Blue Lock","Black Clover","Tokyo Ghoul", "Geass", "Bizarre",
     "Fairy", "Sins", "Note", "Slime", "Mage", "Zero", "Vagrant",
     "Rebellion", "Viking", "Mercenary", "Online", "Fate", "Shadow", "Lord",
-    "Spy", "Assassin", "Alchemist", "Reincarnation",
+    "Spy", "Assassin", "Alchemist", "Reincarnation", "Elite",
 
 }
 
@@ -1659,6 +1659,7 @@ local TraitCategories = {
     ["Assassin"] = {"Taro Sakamoto","Lu Saotang","Shin Asakura","Heisuke","Osaragi","Shishiba","Yoichi","Kei","Takamura"},
     ["Alchemist"] = {"Alphonse","Winry","Ling","Riza","Alex","Greed","Edward","Scar","Roy"},
     ["Reincarnation"] = {"Rudeus","Zanoba","Sylphiette","Eris","Roxy","Ghislaine","Rujierd","Kishirika","Orsted"},
+    ["Elite"] = {"Kuroko", "Aida", "Momoi", "Murasakibara", "Midorima", "Kise", "Kagami", "Aomine", "Akashi"},
 
 }
 
@@ -1670,7 +1671,7 @@ local TraitCategoryOrder = {
 	"Blue Lock","Black Clover","Tokyo Ghoul", "Geass", "Bizarre",
     "Fairy", "Sins", "Note", "Slime", "Mage", "Zero", "Vagrant",
     "Rebellion", "Viking", "Mercenary", "Online", "Fate", "Shadow", "Lord",
-    "Spy", "Assassin", "Alchemist", "Reincarnation",
+    "Spy", "Assassin", "Alchemist", "Reincarnation", "Elite",
 }
 
 --========================================================
